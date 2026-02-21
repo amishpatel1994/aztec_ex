@@ -1,7 +1,7 @@
 # AztecEx
 
 Pure Elixir library for encoding and decoding **Aztec 2D barcodes** per
-[ISO/IEC 24778:2024](https://www.iso.org/standard/83498.html).
+[ISO/IEC 24778:2024](https://www.iso.org/standard/82441.html).
 
 No external dependencies or NIFs -- works everywhere Elixir runs.
 
