@@ -152,7 +152,6 @@ defmodule AztecEx.CharTable do
     {:upper, :lower} => {28, 5},
     {:upper, :mixed} => {29, 5},
     {:upper, :digit} => {30, 5},
-    {:lower, :upper} => {28, 5},
     {:lower, :mixed} => {29, 5},
     {:lower, :digit} => {30, 5},
     {:mixed, :lower} => {28, 5},
@@ -165,6 +164,7 @@ defmodule AztecEx.CharTable do
   @shift_codes %{
     {:upper, :punct} => {0, 5},
     {:lower, :punct} => {0, 5},
+    {:lower, :upper} => {28, 5},
     {:mixed, :punct} => {0, 5},
     {:digit, :punct} => {0, 4},
     {:digit, :upper} => {15, 4}

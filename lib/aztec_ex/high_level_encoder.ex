@@ -21,7 +21,7 @@ defmodule AztecEx.HighLevelEncoder do
       digit: [{:upper, :digit}]
     },
     lower: %{
-      upper: [{:lower, :upper}],
+      upper: [{:lower, :mixed}, {:mixed, :upper}],
       mixed: [{:lower, :mixed}],
       punct: [{:lower, :mixed}, {:mixed, :punct}],
       digit: [{:lower, :digit}]

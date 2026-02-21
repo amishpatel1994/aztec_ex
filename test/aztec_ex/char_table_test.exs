@@ -94,6 +94,10 @@ defmodule AztecEx.CharTableTest do
     test "no direct latch from upper to punct" do
       assert CharTable.latch(:upper, :punct) == nil
     end
+
+    test "no direct latch from lower to upper (code 28 is shift, not latch)" do
+      assert CharTable.latch(:lower, :upper) == nil
+    end
   end
 
   describe "shift/2" do
@@ -103,6 +107,10 @@ defmodule AztecEx.CharTableTest do
 
     test "digit to upper shift exists" do
       assert {15, 4} = CharTable.shift(:digit, :upper)
+    end
+
+    test "lower to upper shift exists" do
+      assert {28, 5} = CharTable.shift(:lower, :upper)
     end
 
     test "no shift from upper to lower" do
