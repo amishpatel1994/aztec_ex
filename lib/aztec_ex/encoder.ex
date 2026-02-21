@@ -265,6 +265,125 @@ defmodule AztecEx.Encoder do
     end
   end
 
+  @doc """
+  Draws the reference grid for full Aztec codes.
+
+  Alternating black/white lines at every 16th row and column from center.
+  Compact codes do not have a reference grid.
+  """
+  @spec draw_reference_grid(BitMatrix.t(), non_neg_integer(), non_neg_integer()) :: BitMatrix.t()
+  def draw_reference_grid(matrix, cx, cy) do
+    {w, h} = BitMatrix.dimensions(matrix)
+
+    Enum.reduce(0..(max(w, h) - 1), matrix, fn i, mat ->
+      Enum.reduce(reference_grid_offsets(cx), mat, fn offset, m ->
+        x = cx + offset
+        y = cy + offset
+
+        m =
+          if x >= 0 and x < w do
+            if i >= 0 and i < h, do: BitMatrix.set(m, x, i, rem(i, 2) == 0), else: m
+          else
+            m
+          end
+
+        if y >= 0 and y < h do
+          if i >= 0 and i < w, do: BitMatrix.set(m, i, y, rem(i, 2) == 0), else: m
+        else
+          m
+        end
+      end)
+    end)
+  end
+
+  defp reference_grid_offsets(center) do
+    Stream.iterate(0, &(&1 + 1))
+    |> Enum.reduce_while([0], fn i, acc ->
+      offset = (i + 1) * 16
+
+      if offset > center + 100 do
+        {:halt, acc}
+      else
+        {:cont, [offset, -offset | acc]}
+      end
+    end)
+  end
+
+  @doc """
+  Checks whether a coordinate lies on the reference grid.
+  """
+  @spec on_reference_grid?(non_neg_integer(), non_neg_integer(), non_neg_integer()) :: boolean()
+  def on_reference_grid?(x, y, center) do
+    rem(abs(x - center), 16) == 0 or rem(abs(y - center), 16) == 0
+  end
+
+  @doc """
+  Generates the spiral data positions for placing bits in the symbol.
+
+  Data spirals counterclockwise from the outer top-left corner inward
+  to just above the finder core, in 2-bit-wide layers.
+
+  Returns a list of `{x, y}` coordinates in the order bits should be placed.
+  """
+  @spec spiral_positions(boolean(), pos_integer(), non_neg_integer()) :: [
+          {non_neg_integer(), non_neg_integer()}
+        ]
+  def spiral_positions(compact, layers, center) do
+    core_half = if compact, do: 5, else: 7
+
+    layers..1//-1
+    |> Enum.flat_map(fn layer ->
+      offset = core_half + 2 * (layer - 1)
+      layer_positions(compact, center, offset)
+    end)
+  end
+
+  defp layer_positions(compact, center, offset) do
+    inner = offset + 1
+    outer = offset + 2
+
+    top_positions =
+      for x <- (center - outer)..(center + outer),
+          y <- [center - outer, center - inner],
+          not (!compact and on_reference_grid?(x, y, center)),
+          do: {x, y}
+
+    right_positions =
+      for y <- (center - outer)..(center + outer),
+          x <- [center + outer, center + inner],
+          not (!compact and on_reference_grid?(x, y, center)),
+          do: {x, y}
+
+    bottom_positions =
+      for x <- (center + outer)..(center - outer)//-1,
+          y <- [center + outer, center + inner],
+          not (!compact and on_reference_grid?(x, y, center)),
+          do: {x, y}
+
+    left_positions =
+      for y <- (center + outer)..(center - outer)//-1,
+          x <- [center - outer, center - inner],
+          not (!compact and on_reference_grid?(x, y, center)),
+          do: {x, y}
+
+    top_positions ++ right_positions ++ bottom_positions ++ left_positions
+  end
+
+  @doc """
+  Places data bits into the symbol at the spiral positions.
+  """
+  @spec place_data(BitMatrix.t(), list(0 | 1), boolean(), pos_integer(), non_neg_integer()) ::
+          BitMatrix.t()
+  def place_data(matrix, data_bits, compact, layers, center) do
+    positions = spiral_positions(compact, layers, center)
+
+    positions
+    |> Enum.zip(data_bits)
+    |> Enum.reduce(matrix, fn {{x, y}, bit}, mat ->
+      BitMatrix.set(mat, x, y, bit == 1)
+    end)
+  end
+
   @doc false
   def int_to_bits(value, width) do
     HighLevelEncoder.int_to_bits(value, width)
