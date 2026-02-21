@@ -101,4 +101,4 @@ AztecEx.decode/1
 
 ## License
 
-MIT. See [LICENSE](LICENSE) for details.
+GPL-3.0-only. See [LICENSE](LICENSE) for details.

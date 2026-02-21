@@ -35,7 +35,7 @@ defmodule AztecEx.MixProject do
 
   defp package do
     [
-      licenses: ["MIT"],
+      licenses: ["GPL-3.0-only"],
       links: %{
         "GitHub" => @source_url
       },
