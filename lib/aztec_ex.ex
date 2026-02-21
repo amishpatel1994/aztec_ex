@@ -48,7 +48,7 @@ defmodule AztecEx do
   Returns `{:ok, binary}` on success, `{:error, reason}` on failure.
   """
   @spec decode(AztecEx.BitMatrix.t()) :: {:ok, binary()} | {:error, String.t()}
-  def decode(_matrix) do
-    {:error, "not yet implemented"}
+  def decode(matrix) do
+    AztecEx.Decoder.decode(matrix)
   end
 end

@@ -17,8 +17,10 @@ defmodule AztecExTest do
     assert {:ok, %AztecEx.Code{}} = AztecEx.encode("")
   end
 
-  test "decode/1 returns not yet implemented stub" do
-    assert {:error, "not yet implemented"} = AztecEx.decode(nil)
+  test "encode then decode roundtrip" do
+    {:ok, code} = AztecEx.encode("HELLO")
+    {:ok, decoded} = AztecEx.decode(code.matrix)
+    assert decoded == "HELLO"
   end
 
   test "AztecEx.Code struct has expected fields" do
