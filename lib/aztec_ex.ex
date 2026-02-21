@@ -5,15 +5,32 @@ defmodule AztecEx do
 
   ## Encoding
 
-      iex> {:ok, code} = AztecEx.encode("Hello")
-      iex> code.compact
-      true
+      {:ok, code} = AztecEx.encode("Hello World")
+      code.compact  #=> true
+      code.layers   #=> 2
 
   ## Decoding
 
-      iex> {:ok, code} = AztecEx.encode("Hello")
-      iex> AztecEx.decode(code.matrix)
-      {:ok, "Hello"}
+      {:ok, data} = AztecEx.decode(code.matrix)
+      data  #=> "Hello World"
+
+  ## Rendering
+
+      svg = AztecEx.to_svg(code, module_size: 4, margin: 2)
+      text = AztecEx.to_text(code)
+
+  ## Architecture
+
+  The library is split into focused modules:
+
+    * `AztecEx.BitMatrix` - 2D boolean grid for symbol representation
+    * `AztecEx.GaloisField` - finite field arithmetic over GF(2^p)
+    * `AztecEx.ReedSolomon.Encoder` / `AztecEx.ReedSolomon.Decoder` - error correction
+    * `AztecEx.HighLevelEncoder` / `AztecEx.HighLevelDecoder` - character encoding modes
+    * `AztecEx.BitStuffing` - bit stuffing and padding per specification
+    * `AztecEx.Encoder` - full encoding pipeline (symbol layout)
+    * `AztecEx.Decoder` - full decoding pipeline (finder detection, data reading)
+    * `AztecEx.Render.SVG` / `AztecEx.Render.Text` - output renderers
   """
 
   alias AztecEx.Code

@@ -45,9 +45,22 @@ defmodule AztecEx.MixProject do
 
   defp docs do
     [
-      main: "AztecEx",
+      main: "readme",
       source_ref: "v#{@version}",
-      source_url: @source_url
+      source_url: @source_url,
+      extras: ["README.md"],
+      groups_for_modules: [
+        "Public API": [AztecEx, AztecEx.Code],
+        Encoding: [AztecEx.Encoder, AztecEx.HighLevelEncoder, AztecEx.CharTable],
+        Decoding: [AztecEx.Decoder, AztecEx.HighLevelDecoder],
+        "Error Correction": [
+          AztecEx.GaloisField,
+          AztecEx.ReedSolomon.Encoder,
+          AztecEx.ReedSolomon.Decoder
+        ],
+        Data: [AztecEx.BitMatrix, AztecEx.BitStuffing],
+        Rendering: [AztecEx.Render.SVG, AztecEx.Render.Text]
+      ]
     ]
   end
 end
