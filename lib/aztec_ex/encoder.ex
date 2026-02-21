@@ -274,6 +274,7 @@ defmodule AztecEx.Encoder do
   @spec draw_reference_grid(BitMatrix.t(), non_neg_integer(), non_neg_integer()) :: BitMatrix.t()
   def draw_reference_grid(matrix, cx, cy) do
     {w, h} = BitMatrix.dimensions(matrix)
+    core_half = 7
 
     Enum.reduce(0..(max(w, h) - 1), matrix, fn i, mat ->
       Enum.reduce(reference_grid_offsets(cx), mat, fn offset, m ->
@@ -281,19 +282,25 @@ defmodule AztecEx.Encoder do
         y = cy + offset
 
         m =
-          if x >= 0 and x < w do
-            if i >= 0 and i < h, do: BitMatrix.set(m, x, i, rem(i, 2) == 0), else: m
+          if x >= 0 and x < w and i >= 0 and i < h and
+               not in_core?(x, i, cx, cy, core_half) do
+            BitMatrix.set(m, x, i, rem(i, 2) == 0)
           else
             m
           end
 
-        if y >= 0 and y < h do
-          if i >= 0 and i < w, do: BitMatrix.set(m, i, y, rem(i, 2) == 0), else: m
+        if y >= 0 and y < h and i >= 0 and i < w and
+             not in_core?(i, y, cx, cy, core_half) do
+          BitMatrix.set(m, i, y, rem(i, 2) == 0)
         else
           m
         end
       end)
     end)
+  end
+
+  defp in_core?(x, y, cx, cy, half) do
+    abs(x - cx) <= half and abs(y - cy) <= half
   end
 
   defp reference_grid_offsets(center) do
