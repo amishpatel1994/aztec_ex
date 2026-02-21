@@ -51,4 +51,24 @@ defmodule AztecEx do
   def decode(matrix) do
     AztecEx.Decoder.decode(matrix)
   end
+
+  @doc """
+  Renders an encoded Aztec code as an SVG string.
+
+  See `AztecEx.Render.SVG.render_code/2` for available options.
+  """
+  @spec to_svg(Code.t(), keyword()) :: String.t()
+  def to_svg(%Code{} = code, opts \\ []) do
+    AztecEx.Render.SVG.render_code(code, opts)
+  end
+
+  @doc """
+  Renders an encoded Aztec code as a text/Unicode string.
+
+  See `AztecEx.Render.Text.render_code/2` for available options.
+  """
+  @spec to_text(Code.t(), keyword()) :: String.t()
+  def to_text(%Code{} = code, opts \\ []) do
+    AztecEx.Render.Text.render_code(code, opts)
+  end
 end

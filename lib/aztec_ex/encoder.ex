@@ -350,25 +350,25 @@ defmodule AztecEx.Encoder do
     outer = offset + 2
 
     top_positions =
-      for x <- (center - outer)..(center + outer),
+      for x <- (center - outer)..(center + outer - 2),
           y <- [center - outer, center - inner],
           not (!compact and on_reference_grid?(x, y, center)),
           do: {x, y}
 
     right_positions =
-      for y <- (center - outer)..(center + outer),
+      for y <- (center - outer)..(center + outer - 2),
           x <- [center + outer, center + inner],
           not (!compact and on_reference_grid?(x, y, center)),
           do: {x, y}
 
     bottom_positions =
-      for x <- (center + outer)..(center - outer)//-1,
+      for x <- (center + outer)..(center - outer + 2)//-1,
           y <- [center + outer, center + inner],
           not (!compact and on_reference_grid?(x, y, center)),
           do: {x, y}
 
     left_positions =
-      for y <- (center + outer)..(center - outer)//-1,
+      for y <- (center + outer)..(center - outer + 2)//-1,
           x <- [center - outer, center - inner],
           not (!compact and on_reference_grid?(x, y, center)),
           do: {x, y}
