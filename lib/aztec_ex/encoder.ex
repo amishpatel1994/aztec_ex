@@ -384,6 +384,69 @@ defmodule AztecEx.Encoder do
     end)
   end
 
+  @doc """
+  Full encoding pipeline: data -> AztecEx.Code.
+
+  1. High-level encode data to bitstream
+  2. Select symbol size (compact/full, layers)
+  3. Bit-stuff and pad to codeword boundary
+  4. RS-encode check codewords
+  5. Build mode message
+  6. Lay out complete symbol in BitMatrix
+  """
+  @spec encode(binary(), keyword()) :: {:ok, AztecEx.Code.t()} | {:error, String.t()}
+  def encode(data, opts \\ []) do
+    with {:ok, hl_bits} <- HighLevelEncoder.encode(data),
+         {:ok, {compact, layers, cw_size, total_capacity, symbol_size}} <-
+           select_symbol(hl_bits, opts) do
+      stuffed = BitStuffing.stuff(hl_bits, cw_size)
+      padded = BitStuffing.pad(stuffed, cw_size)
+
+      data_codewords_list = BitStuffing.to_codewords(padded, cw_size)
+      data_cw_count = length(data_codewords_list)
+
+      total_codewords = div(total_capacity, cw_size)
+      check_count = total_codewords - data_cw_count
+
+      check_codewords = ReedSolomon.Encoder.encode(cw_size, data_codewords_list, check_count)
+      all_codewords = data_codewords_list ++ check_codewords
+      all_bits = BitStuffing.from_codewords(all_codewords, cw_size)
+
+      prefix_padding = total_capacity - length(all_bits)
+
+      all_data_bits =
+        if prefix_padding > 0 do
+          List.duplicate(0, prefix_padding) ++ all_bits
+        else
+          all_bits
+        end
+
+      mode_bits = build_mode_message(compact, layers, data_cw_count)
+      center = div(symbol_size, 2)
+
+      matrix =
+        BitMatrix.new(symbol_size)
+        |> draw_finder(compact, center, center)
+        |> draw_orientation(compact, center, center)
+        |> then(fn m ->
+          if compact, do: m, else: draw_reference_grid(m, center, center)
+        end)
+        |> place_mode_message(compact, mode_bits, center, center)
+        |> place_data(all_data_bits, compact, layers, center)
+
+      code = %AztecEx.Code{
+        matrix: matrix,
+        compact: compact,
+        layers: layers,
+        codeword_size: cw_size,
+        data_codewords: data_cw_count,
+        size: symbol_size
+      }
+
+      {:ok, code}
+    end
+  end
+
   @doc false
   def int_to_bits(value, width) do
     HighLevelEncoder.int_to_bits(value, width)

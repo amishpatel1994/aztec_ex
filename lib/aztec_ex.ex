@@ -35,8 +35,8 @@ defmodule AztecEx do
   Returns `{:ok, %AztecEx.Code{}}` on success, `{:error, reason}` on failure.
   """
   @spec encode(binary(), [encode_option()]) :: {:ok, Code.t()} | {:error, String.t()}
-  def encode(_data, _opts \\ []) do
-    {:error, "not yet implemented"}
+  def encode(data, opts \\ []) do
+    AztecEx.Encoder.encode(data, opts)
   end
 
   @doc """
